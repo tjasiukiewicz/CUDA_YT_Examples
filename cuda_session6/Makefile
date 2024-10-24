@@ -3,14 +3,14 @@
 NVCC := nvcc
 NVCC_FLAGS := --expt-extended-lambda
 
-all: hills_steele
+all: hillis_steele
 
-hills_steele: hills_steele.o
+hillis_steele: hillis_steele.o
 	$(NVCC) $(NVCC_FLAGS) -o $@ $<
 
-hills_steele.o: hills_steele.cu Makefile
+hillis_steele.o: hillis_steele.cu Makefile
 	$(NVCC) $(NVCC_FLAGS) -c -o $@ $<
 
 clean:
-	@rm -f hills_steele hills_steele.o >/dev/null 2>&1
+	@rm -f hillis_steele hillis_steele.o >/dev/null 2>&1
 

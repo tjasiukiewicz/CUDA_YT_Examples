@@ -6,7 +6,7 @@
 
 // Algorytm Hillis/Steele inclusive scan na 1 bloku
 template<typename T, typename Func>
-__global__ void hills_steele_scan(T * const result, const T * const source, Func func) {
+__global__ void hillis_steele_scan(T * const result, const T * const source, Func func) {
 
 	assert(gridDim.x == 1);
 
@@ -53,7 +53,7 @@ int main() {
 
 	cudaMemcpy(dSource, hSource, MemElements, cudaMemcpyHostToDevice);
 
-	hills_steele_scan<<<Block, ThreadsInBlock>>>(dDestination, dSource, 
+	hillis_steele_scan<<<Block, ThreadsInBlock>>>(dDestination, dSource, 
 			[] __device__ (auto a, auto b) { return a + b; });
 
 	cudaMemcpy(hDestination, dDestination, MemElements, cudaMemcpyDeviceToHost);
