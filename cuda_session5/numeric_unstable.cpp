@@ -7,9 +7,9 @@
 #include <cstdio>
 
 template<typename T, typename Func>
-std::map<T, unsigned long> compute_numeric_instability(std::vector<T> & vec, float ident, Func func) {
+std::unordered_map<T, unsigned long> compute_numeric_instability(std::vector<T> & vec, float ident, Func func) {
 
-	std::map<T, unsigned long> results;
+	std::unordered_map<T, unsigned long> results;
 
 	do {
 		T sum = std::accumulate(vec.cbegin(), vec.cend(), ident, func);
@@ -20,7 +20,7 @@ std::map<T, unsigned long> compute_numeric_instability(std::vector<T> & vec, flo
 }
 
 template<typename T>
-T max_difference(const std::map<T, unsigned long>& results) {
+T max_difference(const std::unordered_map<T, unsigned long>& results) {
 
 	std::vector<T> values(results.size());
 
