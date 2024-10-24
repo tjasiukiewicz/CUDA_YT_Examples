@@ -13,6 +13,14 @@ __global__ void hills_steele_scan(T * const result, const T * const source, Func
 	auto const tid = threadIdx.x;
 
 	result[tid] = source[tid];
+	__syncthreads();
+
+	for (auto stride = 1U; stride < blockDim.x; stride <<= 1) {
+		if (tid >= stride) {
+			result[tid] = func(result[tid], result[tid - stride]);
+		}
+		__syncthreads();
+	}
 }
 
 template<typename T>
