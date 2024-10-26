@@ -23,7 +23,7 @@ __global__ void belloch_scan(T * const result, const T * const source, const T i
 		}
 		__syncthreads();
 	}
-	// Indentity
+	// Identity
 	result[blockDim.x - 1] = ident;
 	// Down-sweep step
 	for (auto stride = blockDim.x / 2; stride > 0 ; stride >>= 1) {
