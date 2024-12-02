@@ -3,6 +3,7 @@
 #include <limits>
 #include <cstdint>
 #include <fstream>
+#include <future>
 #include <vector>
 #include <cstddef>
 #include <string>
@@ -88,8 +89,8 @@ int main() {
 	// Start for CPU
 	auto hStart = std::chrono::high_resolution_clock::now();
 
-	DataType_t * hGeneration = nullptr;
-	cudaMallocHost(&hGeneration, MemElements);
+	DataType_t * hGeneration = static_cast<DataType_t *>(malloc(MemElements));
+	cudaHostRegister(hGeneration, MemElements, cudaHostRegisterPortable);
 
 	// Start for GPU
 	auto dStart = std::chrono::high_resolution_clock::now();
@@ -116,22 +117,31 @@ int main() {
 
 	cudaFree(dGeneration);
 
-	cudaDeviceSynchronize();
+	cudaHostUnregister(hGeneration);
 
 	// End for GPU
 	auto dStop = std::chrono::high_resolution_clock::now();
 
+
+	std::future<void> fSaves[RulesCount];
 	// CPU calculate -> save buffer to file
 	for (RuleType_t rule = 0U; rule < RulesCount; ++rule) {
 		const size_t offset = Elements * rule;
 
-		std::string file_name = std::string("image_") + std::to_string(rule)
-			+ std::string(".pgm");
+		fSaves[rule] = std::async(std::launch::async, [=] {
 
-		save_buffer_to_file(&hGeneration[offset], Width, Height, file_name.c_str(), LiveCell);
+			std::string file_name = std::string("image_") + std::to_string(rule)
+				+ std::string(".pgm");
+
+			save_buffer_to_file(&hGeneration[offset], Width, Height, file_name.c_str(), LiveCell);
+		});
 	}
 
-	cudaFreeHost(hGeneration);
+	for(auto & ft: fSaves) {
+		ft.get();
+	}
+
+	free(hGeneration);
 
 	// End for CPU
 	auto hStop = std::chrono::high_resolution_clock::now();
