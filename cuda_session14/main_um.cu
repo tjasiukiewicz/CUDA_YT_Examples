@@ -40,60 +40,44 @@ int main() {
 	// Start for CPU
 	auto hStart = std::chrono::high_resolution_clock::now();
 
-	DataType_t * hX, * hY, * hDistance, * hSine;
-	hX = hY = hDistance = hSine = nullptr;
+	DataType_t * x, * y, * distance, * sine;
+	x = y = distance = sine = nullptr;
 
-	cudaCheckError(cudaHostAlloc(&hX, MemElements, cudaHostAllocWriteCombined));
-	cudaCheckError(cudaHostAlloc(&hY, MemElements, cudaHostAllocWriteCombined));
-	cudaCheckError(cudaHostAlloc(&hDistance, MemElements, cudaHostRegisterPortable));
-	cudaCheckError(cudaHostAlloc(&hSine, MemElements, cudaHostRegisterPortable));
+	for(auto ptr: {&x, &y, &distance, &sine}) {
+		cudaCheckError(cudaMallocManaged(ptr, MemElements, cudaMemAttachGlobal));
+	}
 
 	// Fill X, Y coord
 	/*
 	srand(0);
 	for (auto i = 0UL; i < Elements; ++i) {
 		// [-1, 1]
-		hX[i] = ((rand() * 2.0F) / RAND_MAX) - 1.0F;
-		hY[i] = ((rand() * 2.0F) / RAND_MAX) - 1.0F;
+		x[i] = ((rand() * 2.0F) / RAND_MAX) - 1.0F;
+		y[i] = ((rand() * 2.0F) / RAND_MAX) - 1.0F;
 	}
 	*/
 
 	// Start for GPU
 	auto dStart = std::chrono::high_resolution_clock::now();
 
-	DataType_t * dX, * dY, * dDistance, * dSine;
-	dX = dY = dDistance = dSine = nullptr;
+	cudaStream_t s1;
 
-	for (auto ptr: {&dX, &dY, &dDistance, &dSine}) {
-		cudaCheckError(cudaMalloc(ptr, MemElements));
-	}
+	cudaCheckError(cudaStreamCreate(&s1));
 
 	cudaCheckLastErrorCont();
-	cudaMemcpyAsync(dX, hX, MemElements, cudaMemcpyHostToDevice);
-	cudaCheckLastError();
-	cudaMemcpyAsync(dY, hY, MemElements, cudaMemcpyHostToDevice);
+	calculate<<<Blocks, ThreadsInBlock, 0, s1>>>(x, y, distance, sine, Elements);
 	cudaCheckLastError();
 
-	cudaCheckLastErrorCont();
-	calculate<<<Blocks, ThreadsInBlock>>>(dX, dY, dDistance, dSine, Elements);
-	cudaCheckLastError();
+	cudaCheckError(cudaStreamSynchronize(s1));
 
-	cudaCheckLastErrorCont();
-	cudaMemcpyAsync(hDistance, dDistance, MemElements, cudaMemcpyDeviceToHost);
-	cudaCheckLastError();
-	cudaMemcpyAsync(hSine, dSine, MemElements, cudaMemcpyDeviceToHost);
-	cudaCheckLastError();
+	cudaCheckError(cudaStreamDestroy(s1));
 
-	for (auto ptr: {dX, dY, dDistance, dSine}) {
+	for (auto ptr: {x, y, distance, sine}) {
 		cudaCheckError(cudaFree(ptr));
 	}
 
 	// End for GPU
 	auto dStop = std::chrono::high_resolution_clock::now();
-
-	for (auto ptr: {hX, hY, hDistance, hSine}) {
-		cudaCheckError(cudaFreeHost(ptr));
-	}
 
 	// End for CPU
 	auto hStop = std::chrono::high_resolution_clock::now();
