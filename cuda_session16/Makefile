@@ -2,7 +2,7 @@
 
 NVCC := nvcc
 NVCC_FLAGS := --cudart shared --std=c++11 -O3 -Xcompiler="-O3,-march=native,-Wall,-Wextra"
-#NVCC_FLAGS += --ptxas-options=-v
+NVCC_FLAGS += --ptxas-options=-v
 #NVCC_FLAGS += --gpu-architecture=native
 
 all: main

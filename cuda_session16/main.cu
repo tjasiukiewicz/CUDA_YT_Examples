@@ -8,10 +8,10 @@
 
 using DataType_t = float;
 
-constexpr static size_t Width = 4;//4096;
-constexpr static size_t Height = 4;//4096;
+constexpr static size_t Width = 4096;
+constexpr static size_t Height = 4096;
 
-constexpr static dim3 ThreadsInBlock = {1024, 1};
+constexpr static dim3 ThreadsInBlock = {64, 1};
 
 // Kernel: Naive matrix transpose, threads mapped value
 template<typename T>
@@ -74,12 +74,12 @@ int main() {
 	// Verify matrix correct: Height <-> Width, Matrix transposed and data flatten !!
 	check_transposed_matrix(hMtrxDst, hMtrxSrc, Width, Height);
 
-	std::cout << "Matrix src:\n";
-	show_matrix(hMtrxSrc, Height, Width);
+	//std::cout << "Matrix src:\n";
+	//show_matrix(hMtrxSrc, Height, Width);
 
-	std::cout << "Matrix transposed:\n";
+	//std::cout << "Matrix transposed:\n";
 	// Height <-> Width, Matrix transformed and data flatten !!
-	show_matrix(hMtrxDst, Width, Height);
+	//show_matrix(hMtrxDst, Width, Height);
 
 	free(hMtrxDst);
 	free(hMtrxSrc);
